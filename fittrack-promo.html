@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitTrack – Move Every Day</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #060608;
+    color: #fff;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    overflow: hidden;
+    width: 1280px;
+    height: 720px;
+  }
+
+  #stage {
+    position: relative;
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+  }
+
+  /* ── Background grid ── */
+  #grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0;
+    animation: fadeIn 1s 0.3s forwards;
+  }
+
+  /* ── Ambient glow ── */
+  #glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 700px; height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,200,120,.12) 0%, transparent 70%);
+    opacity: 0;
+    animation: glowPulse 3s 0.5s ease-in-out forwards;
+  }
+
+  /* ── Heartbeat line ── */
+  #heartbeat-wrap {
+    position: absolute;
+    top: 50%; left: 0;
+    transform: translateY(-50%);
+    width: 100%;
+    opacity: 0;
+    animation: fadeIn 0.6s 0.4s forwards, fadeOut 0.5s 4.2s forwards;
+  }
+
+  #heartbeat-svg {
+    width: 100%; height: 120px;
+    stroke: #00e87a;
+    stroke-width: 2.5;
+    fill: none;
+    stroke-dasharray: 2000;
+    stroke-dashoffset: 2000;
+    animation: drawLine 2.8s 0.5s cubic-bezier(.4,0,.2,1) forwards;
+    filter: drop-shadow(0 0 8px #00e87a);
+  }
+
+  /* ── Logo ── */
+  #logo {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    opacity: 0;
+    animation: logoReveal 0.9s 3.8s cubic-bezier(.16,1,.3,1) forwards;
+  }
+
+  #logo-icon {
+    width: 80px; height: 80px;
+    margin: 0 auto 20px;
+    position: relative;
+  }
+
+  #logo-icon svg { width: 80px; height: 80px; }
+
+  #logo-text {
+    font-size: 96px;
+    font-weight: 800;
+    letter-spacing: -4px;
+    line-height: 1;
+    background: linear-gradient(135deg, #ffffff 0%, #00e87a 60%, #00b8ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Stats bar ── */
+  #stats {
+    position: absolute;
+    bottom: 160px; left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 60px;
+    opacity: 0;
+    animation: slideUp 0.7s 6s cubic-bezier(.16,1,.3,1) forwards;
+  }
+
+  .stat {
+    text-align: center;
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 16px;
+    padding: 20px 32px;
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(8px);
+    min-width: 140px;
+  }
+
+  .stat-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #00e87a;
+    display: block;
+    letter-spacing: -1px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.5);
+    margin-top: 6px;
+    display: block;
+  }
+
+  /* ── Progress ring ── */
+  #ring-wrap {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    animation: fadeIn 0.5s 5.8s forwards, fadeOut 0.5s 9s forwards;
+  }
+
+  #ring-svg { width: 340px; height: 340px; }
+
+  .ring-track { fill: none; stroke: rgba(255,255,255,.06); stroke-width: 14; }
+  .ring-progress {
+    fill: none;
+    stroke: url(#ringGrad);
+    stroke-width: 14;
+    stroke-linecap: round;
+    stroke-dasharray: 880;
+    stroke-dashoffset: 880;
+    animation: ringFill 2s 6s cubic-bezier(.4,0,.2,1) forwards;
+    filter: drop-shadow(0 0 10px #00e87a);
+  }
+
+  /* ── Tagline ── */
+  #tagline-wrap {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    opacity: 0;
+    animation: tagReveal 1s 9.8s cubic-bezier(.16,1,.3,1) forwards;
+  }
+
+  #tagline {
+    font-size: 72px;
+    font-weight: 300;
+    letter-spacing: 12px;
+    text-transform: uppercase;
+    color: #fff;
+    line-height: 1.1;
+  }
+
+  #tagline span {
+    display: block;
+    background: linear-gradient(90deg, #00e87a, #00b8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+    letter-spacing: 14px;
+  }
+
+  /* ── Final frame ── */
+  #final {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    opacity: 0;
+    animation: fadeIn 1s 13.2s forwards;
+  }
+
+  #final-name {
+    font-size: 80px;
+    font-weight: 800;
+    letter-spacing: -3px;
+    background: linear-gradient(135deg, #ffffff 0%, #00e87a 60%, #00b8ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  #final-tag {
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.5);
+  }
+
+  #final-line {
+    width: 60px; height: 2px;
+    background: linear-gradient(90deg, #00e87a, #00b8ff);
+    border-radius: 2px;
+    animation: expandLine 0.8s 14s cubic-bezier(.16,1,.3,1) forwards;
+    transform: scaleX(0);
+    transform-origin: center;
+  }
+
+  /* ── Particles ── */
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: float linear infinite;
+    opacity: 0;
+  }
+
+  /* ── Keyframes ── */
+  @keyframes fadeIn { to { opacity: 1; } }
+  @keyframes fadeOut { to { opacity: 0; } }
+
+  @keyframes glowPulse {
+    0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.6); }
+    50%  { opacity: 1; transform: translate(-50%,-50%) scale(1.05); }
+    100% { opacity: 0.6; transform: translate(-50%,-50%) scale(1); }
+  }
+
+  @keyframes drawLine {
+    to { stroke-dashoffset: 0; }
+  }
+
+  @keyframes logoReveal {
+    from { opacity: 0; transform: translate(-50%,-50%) scale(0.85); }
+    to   { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(30px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  @keyframes ringFill {
+    to { stroke-dashoffset: 154; }  /* ~82% of 880 */
+  }
+
+  @keyframes tagReveal {
+    from { opacity: 0; transform: translate(-50%,-50%) translateY(20px); }
+    to   { opacity: 1; transform: translate(-50%,-50%) translateY(0); }
+  }
+
+  @keyframes expandLine {
+    to { transform: scaleX(1); }
+  }
+
+  @keyframes float {
+    0%   { transform: translateY(0)   translateX(0)   scale(1);   opacity: 0; }
+    10%  { opacity: 0.6; }
+    90%  { opacity: 0.3; }
+    100% { transform: translateY(-400px) translateX(var(--dx)) scale(0.4); opacity: 0; }
+  }
+
+  /* counter animation */
+  @keyframes countSteps { from { content: "0"; } to { content: "8,342"; } }
+  @keyframes countCal   { from { content: "0"; } to { content: "612"; } }
+
+  /* typed counter via JS – see script */
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- Background -->
+  <div id="grid"></div>
+  <div id="glow"></div>
+
+  <!-- Scene 1: Heartbeat (0–3.5s) -->
+  <div id="heartbeat-wrap">
+    <svg id="heartbeat-svg" viewBox="0 0 1280 120" preserveAspectRatio="none">
+      <polyline points="
+        0,60 120,60 180,60 220,10 260,110 300,20 340,100 380,60
+        500,60 560,60 600,30 640,90 680,45 720,60
+        840,60 900,60 940,15 980,105 1020,25 1060,95 1100,60
+        1280,60
+      "/>
+    </svg>
+  </div>
+
+  <!-- Scene 2: Logo (3.8–5.8s) -->
+  <div id="logo">
+    <div id="logo-icon">
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="iconGrad" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#00e87a"/>
+            <stop offset="100%" stop-color="#00b8ff"/>
+          </linearGradient>
+        </defs>
+        <!-- Lightning bolt / fitness icon -->
+        <polygon points="44,4 20,44 38,44 36,76 60,36 42,36" fill="url(#iconGrad)" opacity=".9"/>
+        <circle cx="40" cy="40" r="37" stroke="url(#iconGrad)" stroke-width="2" fill="none" opacity=".3"/>
+      </svg>
+    </div>
+    <div id="logo-text">FitTrack</div>
+  </div>
+
+  <!-- Scene 3: Progress ring + stats (5.8–9s) -->
+  <div id="ring-wrap">
+    <svg id="ring-svg" viewBox="0 0 340 340">
+      <defs>
+        <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#00e87a"/>
+          <stop offset="100%" stop-color="#00b8ff"/>
+        </linearGradient>
+      </defs>
+      <circle class="ring-track"    cx="170" cy="170" r="140"/>
+      <circle class="ring-progress" cx="170" cy="170" r="140"
+        transform="rotate(-90 170 170)"/>
+      <!-- Center text -->
+      <text x="170" y="162" text-anchor="middle" fill="#00e87a"
+        font-size="52" font-weight="800" font-family="Helvetica Neue, Arial">82%</text>
+      <text x="170" y="192" text-anchor="middle" fill="rgba(255,255,255,.45)"
+        font-size="14" font-weight="500" letter-spacing="3" font-family="Helvetica Neue, Arial">GOAL</text>
+    </svg>
+  </div>
+
+  <div id="stats">
+    <div class="stat">
+      <span class="stat-value" id="steps-val">0</span>
+      <span class="stat-label">Steps</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value" id="cal-val">0</span>
+      <span class="stat-label">Calories</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value" id="km-val">0.0</span>
+      <span class="stat-label">Kilometers</span>
+    </div>
+  </div>
+
+  <!-- Scene 4: Tagline (9.8–13s) -->
+  <div id="tagline-wrap">
+    <div id="tagline">
+      Move
+      <span>Every Day</span>
+    </div>
+  </div>
+
+  <!-- Scene 5: Final (13.2–15s) -->
+  <div id="final">
+    <div id="final-name">FitTrack</div>
+    <div id="final-line"></div>
+    <div id="final-tag">Move Every Day</div>
+  </div>
+
+  <!-- Particles canvas -->
+  <canvas id="particles" style="position:absolute;inset:0;pointer-events:none;opacity:0;
+    animation:fadeIn 1s 5s forwards, fadeOut 0.5s 9.2s forwards;"></canvas>
+
+</div>
+
+<script>
+  // ── Particle system ──
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 1280; canvas.height = 720;
+
+  const particles = [];
+  const colors = ['#00e87a','#00b8ff','#ffffff'];
+
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * 1280,
+      y: 720 + Math.random() * 100,
+      r: Math.random() * 2.5 + 0.5,
+      speed: Math.random() * 0.6 + 0.2,
+      dx: (Math.random() - 0.5) * 40,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      opacity: 0,
+      delay: Math.random() * 3,
+      life: 0
+    });
+  }
+
+  let pStart = null;
+  function animParticles(ts) {
+    if (!pStart) pStart = ts;
+    const elapsed = (ts - pStart) / 1000;
+    ctx.clearRect(0, 0, 1280, 720);
+
+    particles.forEach(p => {
+      p.life += 0.004;
+      const t = Math.max(0, p.life - p.delay);
+      if (t <= 0) return;
+      const progress = (t * p.speed);
+      const y = p.y - progress * 180;
+      const x = p.x + (progress / 1) * p.dx * 0.1;
+      const alpha = Math.sin(Math.min(progress * 0.8, Math.PI)) * 0.5;
+      ctx.beginPath();
+      ctx.arc(x, y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = alpha;
+      ctx.fill();
+      if (y < -10 || progress > 5) {
+        p.x = Math.random() * 1280;
+        p.y = 720 + Math.random() * 50;
+        p.life = 0;
+        p.delay = Math.random() * 2;
+      }
+    });
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(animParticles);
+  }
+  requestAnimationFrame(animParticles);
+
+  // ── Counter animation ──
+  function animateCounter(el, start, end, duration, startDelay, formatter) {
+    setTimeout(() => {
+      const startTime = performance.now();
+      function update(ts) {
+        const t = Math.min((ts - startTime) / duration, 1);
+        const ease = 1 - Math.pow(1 - t, 3);
+        const val = start + (end - start) * ease;
+        el.textContent = formatter(val);
+        if (t < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    }, startDelay);
+  }
+
+  animateCounter(
+    document.getElementById('steps-val'),
+    0, 8342, 2000, 6100,
+    v => Math.round(v).toLocaleString()
+  );
+  animateCounter(
+    document.getElementById('cal-val'),
+    0, 612, 1800, 6200,
+    v => Math.round(v).toString()
+  );
+  animateCounter(
+    document.getElementById('km-val'),
+    0, 6.4, 1800, 6300,
+    v => v.toFixed(1)
+  );
+</script>
+</body>
+</html>
