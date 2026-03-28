@@ -1,5 +1,6 @@
 import { Composition } from "remotion";
 import { MapAnimation } from "./MapAnimation";
+import { FitTrack } from "./FitTrack";
 import { airports } from "./data/airports";
 
 const FPS = 30;
@@ -12,13 +13,23 @@ const TOTAL = airports.length * SCENE + (airports.length - 1) * TRAVEL;
 
 export const RemotionRoot: React.FC = () => {
   return (
-    <Composition
-      id="TopAirports"
-      component={MapAnimation}
-      durationInFrames={TOTAL}
-      fps={FPS}
-      width={1920}
-      height={1080}
-    />
+    <>
+      <Composition
+        id="TopAirports"
+        component={MapAnimation}
+        durationInFrames={TOTAL}
+        fps={FPS}
+        width={1920}
+        height={1080}
+      />
+      <Composition
+        id="FitTrackPromo"
+        component={FitTrack}
+        durationInFrames={15 * 30}
+        fps={30}
+        width={1920}
+        height={1080}
+      />
+    </>
   );
 };
