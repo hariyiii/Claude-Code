@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "studio": "remotion studio",
-    "render": "remotion render --gl=angle --concurrency=1",
+    "render": "remotion render --gl=swangle --concurrency=2",
     "build": "remotion bundle"
   },
   "dependencies": {
