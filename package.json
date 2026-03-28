@@ -1,0 +1,26 @@
+{
+  "name": "maps-demo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render --gl=angle --concurrency=1",
+    "build": "remotion bundle"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "remotion": "^4.0.0",
+    "@remotion/cli": "^4.0.0",
+    "@remotion/bundler": "^4.0.0",
+    "@remotion/renderer": "^4.0.0",
+    "@remotion/studio": "^4.0.0",
+    "mapbox-gl": "^3.9.0",
+    "@turf/turf": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/mapbox-gl": "^3.4.0",
+    "typescript": "^5.7.0"
+  }
+}
