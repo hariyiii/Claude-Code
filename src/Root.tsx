@@ -1,6 +1,7 @@
 import { Composition } from "remotion";
 import { MapAnimation } from "./MapAnimation";
 import { StatsVideo } from "./StatsVideo";
+import { StoryReel, STORY_DURATION } from "./StoryReel";
 import { airports } from "./data/airports";
 
 const FPS = 30;
@@ -32,6 +33,15 @@ export const RemotionRoot: React.FC = () => {
         fps={FPS}
         width={1920}
         height={1080}
+        defaultProps={{}}
+      />
+      <Composition
+        id="StoryReel"
+        component={StoryReel}
+        durationInFrames={STORY_DURATION}
+        fps={FPS}
+        width={1080}
+        height={1920}
         defaultProps={{}}
       />
     </>
